@@ -1,0 +1,69 @@
+var onRun = function (context) {
+
+  var doc = doc || context.document;
+  var selection = selection || context.selection;
+
+  var fonts = [];
+
+  function checkLayer(layer) {
+    var className = [layer className];
+    if (className == "MSTextLayer") {
+      var fontName = layer.fontPostscriptName();
+
+      var exists = false;
+
+      for (var i = 0; i < fonts.length; i++) {
+        if (fonts[i] == fontName) {
+          exists = true;
+          break;
+        }
+      }
+
+      if (!exists) {
+        fonts.push(layer.fontPostscriptName());
+      }
+    }
+    if (className == "MSPage" || className == "MSLayerGroup" || className == "MSArtboardGroup") {
+      var sublayers = [layer layers];
+      for (var i = 0; i < [sublayers count]; i++) {
+        var sublayer = [sublayers objectAtIndex:i]
+        checkLayer(sublayer);
+      }
+    }
+  }
+
+  if (selection && [selection count]) {
+    for (var i = 0; i < [selection count]; i++) {
+      checkLayer([selection objectAtIndex:i]);
+    }
+  }
+  else {
+    var pages = [doc pages];
+    for (var i = 0; i < [pages count]; i++) {
+      var current_page = [pages objectAtIndex:i];
+      var artboards = [current_page artboards]
+      if ([artboards count]) {
+        for (var j = 0; j < [artboards count]; j++) {
+          var artboard = [artboards objectAtIndex:j];
+          checkLayer(artboard);
+        }
+      }
+      else {
+        checkLayer(current_page)
+      }
+    }
+  }
+
+  if (fonts.length <= 0) {
+    [doc showMessage:"Could not find any text layers in the document or selection."];
+    return;
+  }
+
+  var message = "";
+  for (var i = 0; i < fonts.length; i++) {
+    log(fonts[i]);
+    message += fonts[i] + " | ";
+  }
+
+  [doc showMessage:message + "Found " + fonts.length + " unique fonts."];
+}

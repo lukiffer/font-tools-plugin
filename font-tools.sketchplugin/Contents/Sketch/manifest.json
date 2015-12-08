@@ -1,0 +1,31 @@
+{
+  "name": "Font Tools Plugin",
+  "description": "List, find and replace fonts used in a document or selection.",
+  "author": "Luke Fritz",
+  "homepage": "https://github.com/lukiffer/font-tools-plugin",
+  "version": 1.0,
+  "identifier": "com.lukefritz.sketch.font-tools",
+  "compatibleVersion": 3,
+  "bundleVersion": 1,
+  "commands": [
+    {
+      "script": "replace.cocoascript",
+      "name": "Find and Replace Font Usage",
+      "identifier": "replace-font",
+      "shortcut": "cmd ctrl shift f"
+    },
+    {
+      "script": "unique.cocoascript",
+      "name": "List All Fonts",
+      "identifier": "unique-font",
+      "shortcut": "cmd ctrl shift e"
+    }
+  ],
+  "menu": {
+    "items": [
+      "replace-font",
+      "unique-font"
+    ],
+    "title": "Font Tools"
+  }
+}

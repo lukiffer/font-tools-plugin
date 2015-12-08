@@ -1,0 +1,70 @@
+var onRun = function (context) {
+
+  var doc = doc || context.document;
+  var selection = selection || context.selection;
+
+  var searchFontName = [doc askForUserInput:"Enter the name of the font to find." initialValue:"(All)"];
+  if (searchFontName == null) {
+    [doc showMessage:"Font replacement canceled."]
+    return;
+  }
+
+  var replaceFontName = [doc askForUserInput:"Enter the name of the replacement font." initialValue:""];
+  if (replaceFontName == null) {
+    [doc showMessage:"Font replacement canceled."]
+    return;
+  }
+
+  var matches = 0;
+
+  function checkLayer(layer) {
+    var className = [layer className];
+    if (className == "MSTextLayer") {
+      if (searchFontName == "(All)" || layer.fontPostscriptName().indexOf(searchFontName) > -1) {
+        log(layer);
+        matches++;
+
+        if (replaceFontName != "") {
+          layer.setFontPostscriptName(replaceFontName);
+        }
+      }
+    }
+    if (className == "MSPage" || className == "MSLayerGroup" || className == "MSArtboardGroup") {
+      var sublayers = [layer layers];
+      for (var i = 0; i < [sublayers count]; i++) {
+        var sublayer = [sublayers objectAtIndex:i]
+        checkLayer(sublayer);
+      }
+    }
+  }
+
+  if (selection && [selection count]) {
+    for (var i = 0; i < [selection count]; i++) {
+      checkLayer([selection objectAtIndex:i]);
+    }
+  }
+  else {
+    var pages = [doc pages];
+    for (var i = 0; i < [pages count]; i++) {
+      var current_page = [pages objectAtIndex:i];
+      var artboards = [current_page artboards]
+      if ([artboards count]) {
+        for (var j = 0; j < [artboards count]; j++) {
+          var artboard = [artboards objectAtIndex:j];
+          checkLayer(artboard);
+        }
+      }
+      else {
+        checkLayer(current_page)
+      }
+    }
+  }
+
+  if (replaceFontName != "") {
+    [doc showMessage:"Changed font from \"" + searchFontName + "\" to \"" + replaceFontName + "\" on " + matches + " text layers."];
+  }
+  else {
+    [doc showMessage:"Found " + matches + " text layers using font \"" + searchFontName + "\"."];
+  }
+  
+}
